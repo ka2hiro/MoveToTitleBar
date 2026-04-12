@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2026 Katushiro Endo
 # SPDX-License-Identifier: MIT
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 
 """
 move_to_titlebar.py  ― タスクトレイ常駐版
@@ -268,6 +268,98 @@ def setup_tray():
 
 
 # ============================================================
+# シャットダウン監視（WM_QUERYENDSESSION / WM_ENDSESSION 応答）
+# ============================================================
+
+WM_DESTROY         = 0x0002
+WM_QUERYENDSESSION = 0x0011
+WM_ENDSESSION      = 0x0016
+
+_WNDPROC = ctypes.WINFUNCTYPE(
+    ctypes.c_long,
+    ctypes.wintypes.HWND,
+    ctypes.c_uint,
+    ctypes.wintypes.WPARAM,
+    ctypes.wintypes.LPARAM,
+)
+
+
+class _WNDCLASS(ctypes.Structure):
+    _fields_ = [
+        ("style",         ctypes.c_uint),
+        ("lpfnWndProc",   _WNDPROC),
+        ("cbClsExtra",    ctypes.c_int),
+        ("cbWndExtra",    ctypes.c_int),
+        ("hInstance",     ctypes.wintypes.HINSTANCE),
+        ("hIcon",         ctypes.wintypes.HICON),
+        ("hCursor",       ctypes.wintypes.HANDLE),
+        ("hbrBackground", ctypes.wintypes.HBRUSH),
+        ("lpszMenuName",  ctypes.wintypes.LPCWSTR),
+        ("lpszClassName", ctypes.wintypes.LPCWSTR),
+    ]
+
+
+def _shutdown_cleanup():
+    try:
+        if _tray_icon is not None:
+            _tray_icon.stop()
+    except Exception:
+        pass
+    os._exit(0)
+
+
+def _wnd_proc(hwnd, msg, wparam, lparam):
+    user32 = ctypes.windll.user32
+    if msg == WM_QUERYENDSESSION:
+        return 1
+    if msg == WM_ENDSESSION:
+        if wparam:
+            threading.Thread(target=_shutdown_cleanup, daemon=True).start()
+        return 0
+    if msg == WM_DESTROY:
+        user32.PostQuitMessage(0)
+        return 0
+    return user32.DefWindowProcW(hwnd, msg, wparam, lparam)
+
+
+_wnd_proc_ref = _WNDPROC(_wnd_proc)
+
+
+def _run_shutdown_watcher():
+    user32   = ctypes.windll.user32
+    kernel32 = ctypes.windll.kernel32
+
+    hInstance  = kernel32.GetModuleHandleW(None)
+    class_name = "MoveToTitleBarShutdownWatcher"
+
+    wc = _WNDCLASS()
+    wc.lpfnWndProc   = _wnd_proc_ref
+    wc.hInstance     = hInstance
+    wc.lpszClassName = class_name
+
+    if not user32.RegisterClassW(ctypes.byref(wc)):
+        return
+
+    hwnd = user32.CreateWindowExW(
+        0, class_name, "MoveToTitleBarShutdownWatcher",
+        0, 0, 0, 0, 0, 0, 0, hInstance, None,
+    )
+    if not hwnd:
+        return
+
+    # シャットダウン順序を後ろ寄りにしておく（0x100 = 低い優先度）。
+    try:
+        kernel32.SetProcessShutdownParameters(0x100, 0)
+    except Exception:
+        pass
+
+    msg = ctypes.wintypes.MSG()
+    while user32.GetMessageW(ctypes.byref(msg), 0, 0, 0) > 0:
+        user32.TranslateMessage(ctypes.byref(msg))
+        user32.DispatchMessageW(ctypes.byref(msg))
+
+
+# ============================================================
 # エントリポイント
 # ============================================================
 
@@ -276,6 +368,11 @@ def main():
     listener        = keyboard.Listener(on_press=on_press, on_release=on_release)
     listener.daemon = True
     listener.start()
+
+    # シャットダウン監視ウィンドウを専用スレッドで起動
+    watcher        = threading.Thread(target=_run_shutdown_watcher)
+    watcher.daemon = True
+    watcher.start()
 
     # タスクトレイはメインスレッドで実行
     tray = setup_tray()
