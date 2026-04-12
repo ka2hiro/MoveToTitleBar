@@ -1,0 +1,71 @@
+This project uses the following third-party libraries:
+
+================================================================================
+pywin32
+================================================================================
+License: Python Software Foundation License (PSF)
+Home: https://github.com/mhammond/pywin32
+Copyright (c) Mark Hammond and contributors
+
+Permission to use, copy, modify, and distribute this software and its
+documentation for any purpose and without fee is hereby granted, provided that
+the above copyright notice appear in all copies and that both that copyright
+notice and this permission notice appear in supporting documentation.
+
+================================================================================
+Pillow
+================================================================================
+License: MIT-CMU (Historical Permission Notice and Disclaimer)
+Home: https://github.com/python-pillow/Pillow
+Copyright (c) 1995-2011 Fredrik Lundh and contributors
+Copyright (c) 2010-2026 Jeffrey A. Clark and contributors
+
+The Python Imaging Library (PIL) is
+
+    Copyright (c) 1997-2011 by Secret Labs AB
+    Copyright (c) 1995-2011 by Fredrik Lundh and contributors
+
+Pillow is the friendly PIL fork. It is
+
+    Copyright (c) 2010 by Jeffrey A. Clark and contributors
+
+Like PIL, Pillow is licensed under the open source MIT-CMU License.
+
+================================================================================
+pynput
+================================================================================
+License: GNU Lesser General Public License v3.0 (LGPLv3)
+Home: https://github.com/moses-palmer/pynput
+Copyright (c) Moses Palmér
+
+This library is free software; you can redistribute it and/or modify it under
+the terms of the GNU Lesser General Public License as published by the Free
+Software Foundation; either version 3 of the License, or (at your option) any
+later version.
+
+Full license text: https://www.gnu.org/licenses/lgpl-3.0.html
+
+================================================================================
+pystray
+================================================================================
+License: GNU Lesser General Public License v3.0 (LGPLv3)
+Home: https://github.com/moses-palmer/pystray
+Copyright (c) Moses Palmér
+
+This library is free software; you can redistribute it and/or modify it under
+the terms of the GNU Lesser General Public License as published by the Free
+Software Foundation; either version 3 of the License, or (at your option) any
+later version.
+
+Full license text: https://www.gnu.org/licenses/lgpl-3.0.html
+
+================================================================================
+PyInstaller (build tool)
+================================================================================
+License: GPLv2+ with bootloader exception
+Home: https://github.com/pyinstaller/pyinstaller
+
+PyInstaller is used only to build the executable. The PyInstaller bootloader
+exception explicitly permits distributing bundled applications under any license.
+
+Full license text: https://github.com/pyinstaller/pyinstaller/blob/develop/COPYING.txt
