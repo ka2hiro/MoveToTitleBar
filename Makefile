@@ -7,11 +7,11 @@ STAMP = .installed
 all: $(STAMP) build
 
 $(STAMP):
-	$(PIP) install pywin32 pynput pystray pillow pyinstaller
+	$(PIP) install pywin32 pynput pystray pillow pyinstaller customtkinter
 	touch $(STAMP)
 
 build: $(STAMP)
-	pyinstaller --onefile --noconsole --version-file=version_info.txt move_to_titlebar.py
+	pyinstaller --onefile --noconsole --collect-data customtkinter --version-file=version_info.txt move_to_titlebar.py
 
 run: $(STAMP)
 	$(PYTHON) move_to_titlebar.py
